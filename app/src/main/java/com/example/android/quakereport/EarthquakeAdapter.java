@@ -10,12 +10,16 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.DecimalFormat;
 
 /**
  * Created by Abhas on 25-09-2017.
  */
 
 public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
+    String primaryLocation;
+    String locationOffset;
+    private static final String LOCATION_SEPARATOR = " of ";
 
 
     public EarthquakeAdapter(Context context, ArrayList<Earthquake> earthquakes) {
@@ -32,14 +36,32 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
                     R.layout.earthquake_list_item, parent, false);
         }
 
+
+
+
         
 
         Earthquake currentEarthquake = getItem(position);
-        TextView magnitudeView = (TextView) listItemView.findViewById(R.id.magnitude);
-        magnitudeView.setText(currentEarthquake.getMagnitude());
 
-        TextView locationView = (TextView) listItemView.findViewById(R.id.location);
-        locationView.setText(currentEarthquake.getLocation());
+        String originalLocation = currentEarthquake.getLocation();
+        if (originalLocation.contains(LOCATION_SEPARATOR)) {
+            String[] parts = originalLocation.split(LOCATION_SEPARATOR);
+            locationOffset = parts[0] + LOCATION_SEPARATOR;
+            primaryLocation = parts[1];
+        } else {
+            locationOffset = getContext().getString(R.string.near_the);
+            primaryLocation = originalLocation;
+        }
+        TextView magnitudeView = (TextView) listItemView.findViewById(R.id.magnitude);
+        String formattedMagnitude = formatMagnitude(currentEarthquake.getMagnitude());
+        // Display the magnitude of the current earthquake in that TextView
+        magnitudeView.setText(formattedMagnitude);
+
+        TextView primaryLocationView = (TextView) listItemView.findViewById(R.id.primary_location);
+        primaryLocationView.setText(primaryLocation);
+
+        TextView locationOffsetView = (TextView) listItemView.findViewById(R.id.location_offset);
+        locationOffsetView.setText(locationOffset);
 
         Date dateObject = new Date(currentEarthquake.getTimeInMilliseconds());
 
@@ -71,5 +93,10 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
     private String formatTime(Date dateObject) {
         SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a");
         return timeFormat.format(dateObject);
+    }
+
+    private String formatMagnitude(double magnitude) {
+        DecimalFormat magnitudeFormat = new DecimalFormat("0.0");
+        return magnitudeFormat.format(magnitude);
     }
 }
